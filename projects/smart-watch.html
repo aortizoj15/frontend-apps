@@ -67,7 +67,9 @@
       </header>
       <main>
         <section>
+          <!-- Container to display image of watch -->
           <div class="watch-container">
+            <!-- Container to hold Google Maps iFrame and time container -->
             <div class="watch-face">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d6339.4996722929!2d-121.94698500000001!3d37.395748!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x485e82470495f7e1!2sNorthside%20Branch%20Library!5e0!3m2!1sen!2sus!4v1577176740655!5m2!1sen!2sus"
@@ -78,6 +80,7 @@
                 allowfullscreen=""
               >
               </iframe>
+                <!-- Container to hold time, day, and date -->
               <div class="time-container">
                 <h2 class="time"></h2>
                 <hr class='date-divider'>
@@ -89,21 +92,35 @@
         </section>
       </main>
       <script>
+        // Grabbing elements
         const timeContainer = document.querySelector('.time-container');
         const dayDisplay = document.querySelector('.day');
         const dateDisplay = document.querySelector('.date');
         const timeDisplay = document.querySelector('.time');
+        // Created new Date
         const d = new Date();
+        // Grabs day of the week from days array using day from new Date as index
         const day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.getDay()];
+        // Grabs month from months array using month from new Date as index
         const month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][d.getMonth()];
-        const testDate = d.getDate();
+        // Get data needed for innerHTML
         const date = d.getDate();
         const year = d.getFullYear();
         const hour = d.getHours();
-        const minutes = d.getMinutes();
+        const initialMinutes = d.getMinutes();
+        // Checks if minutes is less than ten to prepend with a zero if true
+        let minutes = ``
+        if(initialMinutes < 10) {
+          minutes = `0${initialMinutes}`
+        }
+        else {
+          minutes = initialMinutes
+        }
+        // Sets innerHTML for elements
         timeDisplay.innerHTML = `${hour}:${minutes}`
         dayDisplay.innerHTML = `${day}`;
         dateDisplay.innerHTML = `${month} ${date}, ${year}`;
+        // Event listener to show date when the time is clicked
         timeContainer.addEventListener('click', () => {
           timeContainer.classList.toggle('full-screen');
         })

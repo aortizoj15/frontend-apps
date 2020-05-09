@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Stars Rating</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <script
+      src="https://kit.fontawesome.com/38cdf17ff4.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      .stars-container {
+        font-size: 2em;
+      }
+      .fas {
+        color: yellow;
+        -webkit-text-stroke-width: 3px;
+        -webkit-text-stroke-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Stars UI</h1>
+      <p>This app uses a star icon from Font Awesome to create a Stars Rating system</p>
+      <br>
+      <p>The user has the ability to hover over stars and is displayed a message depicting their actions</p>
+      <br>
+      <a href="https://github.com/aortizoj15/frontend-apps/blob/master/projects/stars.html">View Code</a>
+    </header>
+    <main>
+      <section>
+        <div class="stars-container"></div>
+      </section> 
+      <section>
+        <p>
+          You <span class="give-message">are giving</span>
+          <span class="star-count">0</span> Stars!
+        </p>
+      </section>
+    </main>
+    <script>
+      const starsContainer = document.querySelector('.stars-container');
+      const starCount  = document.querySelector('.star-count');
+      const giveMessage = document.querySelector('.give-message');
+      const starArr = [];
+      let freezeSelection = false;
+
+      const upTo = (num, cb, counter = 0) => {
+        if (counter >= num) {
+          return;
+        }
+        cb(counter);
+        return upTo(num, cb, counter+1);
+      }
+
+      function Star(idx) {
+        this.idx = idx;
+        this.htmlStar = document.createElement('i');
+        this.htmlStar.classList.add('far');
+        this.htmlStar.classList.add('fa-star');
+        this.classToggle = () => {
+
+          upTo(5, (i) => {
+            if (freezeSelection) {
+              return;
+            }
+            if (i <= this.idx) {
+              starArr[i].htmlStar.classList.remove("far");
+              starArr[i].htmlStar.classList.add("fas");
+              return;
+            }
+            starArr[i].htmlStar.classList.remove("fas");
+            starArr[i].htmlStar.classList.add("far");
+          })
+        }
+
+        this.htmlStar.addEventListener('click', (e) => {
+          freezeSelection = false;
+          this.classToggle();
+          starCount.innerHTML = this.idx+1;
+          giveMessage.innerHTML = `have given`;
+          freezeSelection = true;
+        })
+
+        this.htmlStar.addEventListener('mouseenter', () => {
+          if(freezeSelection) return;
+          this.classToggle();
+          starCount.innerHTML = this.idx+1;
+        })
+
+        this.htmlStar.addEventListener('mouseout', () => {
+          if(freezeSelection) return;
+          this.classToggle();
+          giveMessage.innerHTML = `are giving`;
+        })
+
+        starsContainer.append(this.htmlStar);
+      }
+
+      upTo(5, (i) => {
+        starArr.push(new Star(i));
+      })
+
+      starsContainer.addEventListener('mouseenter', () => {
+        freezeSelection = false;
+        giveMessage.innerHTML = `are giving`;
+      })
+    </script>
+  </body>
+</html>

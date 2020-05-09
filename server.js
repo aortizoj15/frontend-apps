@@ -5,9 +5,31 @@ const app = express()
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'))
 })
-app.get('/mvp', (req, res) => {
-  res.sendFile(path.join(__dirname, 'mvp.html'))
+
+app.get('/smart-watch', (req, res) => {
+  res.sendFile(path.join(__dirname, '/projects/smart-watch.html'))
 })
+
+app.get('/stars', (req, res) => {
+  res.sendFile(path.join(__dirname, '/projects/stars.html'))
+})
+
+app.get('/smart-watch', (req, res) => {
+  res.sendFile(path.join(__dirname, '/projects/smart-watch.html'))
+})
+
+app.get('/smart-watch', (req, res) => {
+  res.sendFile(path.join(__dirname, '/projects/smart-watch.html'))
+})
+
+app.get('/smart-watch', (req, res) => {
+  res.sendFile(path.join(__dirname, '/projects/smart-watch.html'))
+})
+
+app.get('/smart-watch', (req, res) => {
+  res.sendFile(path.join(__dirname, '/projects/smart-watch.html'))
+})
+
 app.get('/smart-watch', (req, res) => {
   res.sendFile(path.join(__dirname, '/projects/smart-watch.html'))
 })
