@@ -26,15 +26,17 @@
       <h1>Stars UI</h1>
       <p>This app uses a star icon from Font Awesome to create a Stars Rating system</p>
       <br>
-      <p>The user has the ability to hover over stars and is displayed a message depicting their actions</p>
+      <p>The user has the ability to hover over stars, select stars, and is displayed a message depicting their actions</p>
       <br>
       <a href="https://github.com/aortizoj15/frontend-apps/blob/master/projects/stars.html">View Code</a>
     </header>
     <main>
       <section>
+        <!-- Container to append stars to -->
         <div class="stars-container"></div>
       </section> 
       <section>
+        <!-- Paragraph being manipulated to display correct message -->
         <p>
           You <span class="give-message">are giving</span>
           <span class="star-count">0</span> Stars!
@@ -42,12 +44,14 @@
       </section>
     </main>
     <script>
+      // Grabbing elements
       const starsContainer = document.querySelector('.stars-container');
       const starCount  = document.querySelector('.star-count');
       const giveMessage = document.querySelector('.give-message');
       const starArr = [];
       let freezeSelection = false;
-
+      
+      // Helper function which invokes a callback num times
       const upTo = (num, cb, counter = 0) => {
         if (counter >= num) {
           return;
@@ -55,14 +59,15 @@
         cb(counter);
         return upTo(num, cb, counter+1);
       }
-
+      
+      // Star class
       function Star(idx) {
         this.idx = idx;
         this.htmlStar = document.createElement('i');
         this.htmlStar.classList.add('far');
         this.htmlStar.classList.add('fa-star');
+        // Function used to toggle classes to fill/unfill stars
         this.classToggle = () => {
-
           upTo(5, (i) => {
             if (freezeSelection) {
               return;
@@ -77,6 +82,7 @@
           })
         }
 
+        // Click event listener used to set the amount of stars
         this.htmlStar.addEventListener('click', (e) => {
           freezeSelection = false;
           this.classToggle();
@@ -85,12 +91,14 @@
           freezeSelection = true;
         })
 
+        // Mouseenter event listener which fills the stars up to the selected star
         this.htmlStar.addEventListener('mouseenter', () => {
           if(freezeSelection) return;
           this.classToggle();
           starCount.innerHTML = this.idx+1;
         })
 
+        // Mouseout event listener to remove class if selection is not up to that star
         this.htmlStar.addEventListener('mouseout', () => {
           if(freezeSelection) return;
           this.classToggle();
@@ -100,10 +108,12 @@
         starsContainer.append(this.htmlStar);
       }
 
+      // Adds star class to star array
       upTo(5, (i) => {
         starArr.push(new Star(i));
       })
 
+      // Mouseenter event listener which makes stars toggable again after entering stars container
       starsContainer.addEventListener('mouseenter', () => {
         freezeSelection = false;
         giveMessage.innerHTML = `are giving`;
