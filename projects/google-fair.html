@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Google Fair Doodle</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <style>
+      .main-container {
+        display: flex;
+        justify-content: center;
+      }
+      .small-doodle {
+        cursor: none;
+      }
+      .lens {
+        position: absolute;
+        display: none;
+        width: 200px;
+        height: 200px;
+        background: url(https://c0d3.com/challenges/assets/fair/big.jpg);
+        border-radius: 50%;
+        pointer-events: none;
+        background-repeat: no-repeat;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Google Fair Doodle</h1>
+      <p>This app was given as part of an interview at Google.</p>
+      <br>
+      <p>The user is able to hover over the image and magnify the section that is being hovered.</p>
+      <br>
+      <a href="https://github.com/aortizoj15/frontend-apps/blob/master/projects/google-fair.html">View Code</a>
+    </header>
+    <main>
+      <section>
+        <div class="main-container">
+          <img
+            class="small-doodle"
+            src="https://c0d3.com/challenges/assets/fair/small.jpg"
+            alt=""
+          />
+          <div class="lens">
+            <img
+              class="large-doodle"
+              src="https://c0d3.com/challenges/assets/fair/scope.png"
+              alt=""
+            />
+          </div>
+        </div>
+      </section>
+      <section>
+        <a href="https://frontend-apps.a0d3.com/"><button>Go Back to Projects</button></a>
+      </section>
+    </main>
+  <script>
+    const smallDoodle = document.querySelector('.small-doodle');
+    const lens = document.querySelector('.lens');
+    const ratioX = 1263/421;
+    const ratioY = 503/168;
+    smallDoodle.addEventListener('mouseleave', (e) => {
+      lens.style.display = `none`;
+    })
+    smallDoodle.addEventListener('mousemove', (e) => {
+      lens.style.display = `block`;
+
+      const smallLeftBoundary = smallDoodle.offsetLeft;
+      const smallTopBoundary = smallDoodle.offsetTop;
+      const lensWidth = lens.offsetWidth;
+      const lensHeight = lens.offsetHeight;
+      const mouseOffsetX = e.offsetX;
+      const mouseOffsetY = e.offsetY;
+      const moveCircleX = smallLeftBoundary + mouseOffsetX - (lensWidth/2);
+      const moveCircleY = smallTopBoundary + mouseOffsetY - (lensHeight/2);
+      const moveLargeImageX = (mouseOffsetX * ratioX * -1) + (lensWidth / 2);
+      const moveLargeImageY = (mouseOffsetY * ratioY * -1) + (lensHeight / 2);
+      
+      lens.style.left = `${moveCircleX}px`;
+      lens.style.top = `${moveCircleY}px`;
+      lens.style.backgroundPositionX = `${moveLargeImageX}px`;
+      lens.style.backgroundPositionY = `${moveLargeImageY}px`;
+    })
+  </script>
+</body>
+</html>
