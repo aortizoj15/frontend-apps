@@ -18,8 +18,8 @@ app.get('/google-fair', (req, res) => {
   res.sendFile(path.join(__dirname, '/projects/google-fair.html'))
 })
 
-app.get('/smart-watch', (req, res) => {
-  res.sendFile(path.join(__dirname, '/projects/smart-watch.html'))
+app.get('/lights-off', (req, res) => {
+  res.sendFile(path.join(__dirname, '/projects/lights-off.html'))
 })
 
 app.get('/smart-watch', (req, res) => {

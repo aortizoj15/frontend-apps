@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      .block {
+        display: inline-block;
+        background: rgb(207, 207, 207);
+        border: 3px solid black;
+        width: 50px;
+        height: 50px;
+      }
+      .on {
+        background: rgb(50, 200, 50);
+      }
+    </style>
+    <title>Lights Off</title>
+  </head>
+  <body>
+    <header>
+      <h1>Lights Off</h1>
+      <p>This app creates a game where the objective is to turn off all the tiles.</p>
+      <br>
+      <p>The user can only click on colored tiles whcih trigger the neighboring tiles to turn on while the clicked tile is turned off.</p>
+      <br>
+      <a href="https://github.com/aortizoj15/frontend-apps/blob/master/projects/lights-off.html">View Code</a>
+    </header>
+    <main>
+      <section>
+        <div class="game-container"></div>
+      </section>
+      <section>
+        <a href="/"><button>Go Back to Projects</button></a>
+      </section>
+    </main>
+    <script>
+      const gameContainer = document.querySelector('.game-container');
+      let boardSize;
+      let blockArr = [];
+      const makeGrid = (row = 2, col = 2, rowArr = [], colArr = [], rowVal = 0, colVal = 0) => {
+        if (row === 0) return rowArr;
+        if (col === colArr.length) {
+          rowArr.push(colArr);
+          return makeGrid(row - 1, col, rowArr, [], rowVal + 1, 0);
+        }
+        colArr.push(new Block(rowVal, colVal));
+        return makeGrid(row, col, rowArr, colArr, rowVal, colVal + 1);
+      };
+      const lightCount = () => {
+        const lightsOnCount = blockArr.reduce((acc, val) => {
+          const innerOnCount = val.reduce((acc, val) => {
+            if (val.on) {
+              return acc + 1;
+            }
+            return acc;
+          }, 0);
+          return acc + innerOnCount;
+        }, 0);
+        return lightsOnCount;
+      }
+      const resetAfterWin = () => {
+        gameContainer.innerHTML = "";
+        boardSize = Number(prompt("You won! Play again with different size? 0 to stop playing"));
+        if (boardSize === 0) {
+          return createGame();
+        }
+        createGame(boardSize);
+      }
+      function Block(row, col) {
+        this.row = row;
+        this.col = col;
+        this.on = false;
+        this.htmlBlock = document.createElement("div");
+        this.htmlBlock.classList.add("block");
+        this.toggle = function() {
+          if (this.on) {
+            this.on = false;
+            this.htmlBlock.classList.remove("on");
+            return;
+          }
+          this.on = true;
+          this.htmlBlock.classList.add("on");
+        };
+        this.htmlBlock.addEventListener("click", () => {
+          if (!this.on) {
+            return;
+          }
+          this.toggle();
+          if (blockArr[this.row + 1]) blockArr[this.row + 1][this.col].toggle();
+          if (blockArr[this.row][this.col + 1]) blockArr[this.row][this.col + 1].toggle();
+          if (blockArr[this.row - 1]) blockArr[this.row - 1][this.col].toggle();
+          if (blockArr[this.row][this.col - 1]) blockArr[this.row][this.col - 1].toggle();
+          if (lightCount() === 0) {
+            resetAfterWin();
+          }
+        });
+        gameContainer.append(this.htmlBlock);
+      }
+      const createGame = (gameDimension = 2) => {
+        const blockSize = 50;
+        const gridSize = gameDimension * blockSize;
+        blockArr = [];
+        gameContainer.style.width = `${gridSize}px`;
+        makeGrid(gameDimension, gameDimension, blockArr);
+        const randomBlock = blockArr[Math.floor(Math.random() * blockArr.length)][Math.floor(Math.random() * blockArr.length)];
+        randomBlock.toggle();
+      };
+      createGame();
+    </script>
+  </body>
+</html>
