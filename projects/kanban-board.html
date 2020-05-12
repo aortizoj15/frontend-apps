@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <style>
+      *,
+      *::after,
+      *::before {
+        box-sizing: border-box;
+      }
+      body {
+        width: 100%;
+      }
+      .todo-container {
+        display: flex;
+        position: relative;
+        top: 30px;
+        left: 30px;
+      }
+      .board {
+        width: 25%;
+        margin-right: 30px;
+      }
+      .title-container {
+        width: 100%;
+        height: 50px;
+      }
+      .title {
+        color: white;
+        margin: 0px;
+        text-align: center;
+      }
+      .all-items-container {
+        width: 100%;
+        height: auto;
+      }
+      .inputs {
+        display: flex;
+        flex-direction: column;
+      }
+      .inputs button {
+        width: 75%;
+        align-self: center;
+      } 
+      .inputs textarea {
+        width: 100%;
+      }
+      .item-container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #aaaaaa;
+        margin-bottom: 5px;
+        padding: 10px;
+        word-break: break-word;
+      }
+      .item-container:last-of-type {
+        margin-bottom: 0;
+      }
+      .left-arrow,
+      .right-arrow {
+        align-self: center;
+        margin: 10px;
+        cursor: pointer;
+      }
+      .todo-text {
+        align-self: center;
+      }
+      .undo-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+      }
+    </style>
+    <title>Kanban Board</title>
+  </head>
+  <body>
+    <header>
+      <h1>Kanban Board</h1>
+      <p>This app is a fully functional Kanban Board that uses Local Storage to store tasks.</p>
+      <br>
+      <p>The user can create tasks for each board, click on task text to delete when complete, and move them around the boards by clicking the arrows.</p>
+      <p>The user can also undo any action by clicking the undo button located in the bottom right corner.</p>
+      <br>
+      <a href="https://github.com/aortizoj15/frontend-apps/blob/master/projects/kanban-board.html">View Code</a>
+    </header>
+    <main>
+      <section>
+        <div class="todo-container"></div>
+      </section>
+      <hr>
+      <section>
+        <a href="/"><button>Go Back to Projects</button></a>
+      </section>
+    </main>
+    <script>
+      // Grabs container
+      let todoContainer = document.querySelector(".todo-container");
+      // Initiates local storage
+      const localStorageData = localStorage.getItem("kanban") || '[]';
+      let parsedLocalStorage = JSON.parse(localStorageData);
+      let arrOfBoards = [];
+      const undoStack = [];
+      const undoBtn = document.createElement('button');
+      // Creates array of boards
+      const generateBoards = () => {
+        todoContainer.innerHTML = ``;
+        arrOfBoards = [
+            new Board("To-Do", "#35235D", 0),
+            new Board("Doing", "#CB2402", 1),
+            new Board("Done", "#4C49A2", 2),
+            new Board("Approved", "#A31A48", 3)
+          ];
+      }
+      generateBoards();
+      undoBtn.classList.add('undo-btn');
+      undoBtn.innerHTML = `Undo`;
+      document.body.append(undoBtn);
+      // Gets data from boards
+      const getArrOfBoards = () => {
+        return arrOfBoards.map((val) => {
+          return val.getData();
+        })
+      }
+      // Manages a stack to hold actions in order to undo
+      const setUndoStack = () => {
+        const result = getArrOfBoards();
+        undoStack.push(result);
+      }
+      // Sets the local storage
+      const setLocalStorage = () => {
+        const result = getArrOfBoards();
+        localStorage.setItem("kanban", JSON.stringify(result));
+      };
+      // Defines the board class
+      function Board(title, headerColor, idx) {
+        let itemArray = [];
+        const boardContainer = document.createElement("div");
+        boardContainer.classList.add("board");
+        // Adds the skeleton of a board
+        boardContainer.innerHTML = `
+          <div style="background: ${headerColor}" class="title-container">
+            <h1 class="title">${title}</h1>
+          </div>
+          <div class="all-items-container">
+          </div>
+          <div class="inputs">
+            <textarea class="input-text-area"></textarea>
+            <button class="add-todo">Add Task</button>
+          </div>
+          `;
+        todoContainer.append(boardContainer);
+        const addTodoButton = boardContainer.querySelector(".add-todo");
+        const allItemsContainer = boardContainer.querySelector(".all-items-container");
+        this.getData = () => {
+          const strArr = itemArray.map(item => {
+            return item.getData();
+          });
+          return strArr.filter(str => {
+            return str;
+          });
+        };
+        this.addTodo = (str) => {
+          itemArray.push(new Item(str, allItemsContainer, idx));
+        }
+        addTodoButton.addEventListener("click", () => {
+          setUndoStack();
+          const textArea = boardContainer.querySelector(".input-text-area");
+          const textAreaValue = textArea.value;
+          if (!textAreaValue) {
+            return;
+          }
+          itemArray.push(new Item(textAreaValue, allItemsContainer, idx));
+          textArea.value = ``;
+          setLocalStorage();
+        });
+        const dataArr = parsedLocalStorage[idx] || [];
+        itemArray = dataArr.map((val) => {
+          return new Item(val, allItemsContainer, idx);
+        })
+      }
+      // Defines the Item class used for each task
+      function Item(todoString, container, idx) {
+        const itemContainer = document.createElement("div");
+        const left = idx === 0 ? '' : '<';
+        const right = idx === 3 ? '' : '>';
+        itemContainer.classList.add("item-container");
+        itemContainer.innerHTML = `
+          <span class="left-arrow">${left}</span>
+          <span class="todo-text">${todoString}</span>
+          <span class="right-arrow">${right}</span>
+          `;
+        container.append(itemContainer);
+        const leftArrow = itemContainer.querySelector(".left-arrow");
+        const todoText = itemContainer.querySelector(".todo-text");
+        const rightArrow = itemContainer.querySelector(".right-arrow");
+        rightArrow.addEventListener("click", () => {
+          setUndoStack();
+          arrOfBoards[idx + 1].addTodo(todoString)
+          itemContainer.remove();
+          todoString = null;
+          setLocalStorage();
+        });
+        leftArrow.addEventListener("click", () => {
+          setUndoStack();
+          arrOfBoards[idx - 1].addTodo(todoString)
+          itemContainer.remove();
+          todoString = null;
+          setLocalStorage();
+        });
+        this.getData = () => {
+          return todoString;
+        };
+        // Handles deletion of a task
+        todoText.addEventListener("click", () => {
+          const deleteMe = confirm(
+            `Are you sure you want to delete "${todoString}"?`
+          );
+          if (deleteMe) {
+            setUndoStack();
+            todoString = null;
+            itemContainer.remove();
+            setLocalStorage();
+          }
+        });
+      }
+      undoBtn.addEventListener('click', () => {
+        const undoArr = undoStack.pop();
+        if (!undoArr) {
+          return;
+        }
+        parsedLocalStorage = undoArr;
+        generateBoards();
+      })
+    </script>
+  </body>
+</html>
