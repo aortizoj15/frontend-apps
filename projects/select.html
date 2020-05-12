@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <title>Selection Box</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        height: 100vh;
+      }
+      .block {
+        display: inline-block;
+        width: 100px;
+        height: 100px;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        border: 5px solid lightcoral;
+      }
+      .boxes-container {
+        width: 600px;
+        user-select: none;
+        user-drag: none;
+      }
+      .draggable-box {
+        display: none;
+        position: absolute;
+        border: 3px solid black;
+        background-color: rgba(100, 200, 100, 0.5);
+      }
+      .selected {
+        background-color: lightblue;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Selection Box</h1>
+      <p>This app uses mouse events to select boxes by dragging over the desired boxes.</p>
+      <br>
+      <p>The user is able to hold down and drag over boxes, selecting them after letting go of the mouse.</p>
+      <br>
+      <a href="https://github.com/aortizoj15/frontend-apps/blob/master/projects/select.html">View Code</a>
+    </header>
+    <main>
+      <section>
+        <div class="boxes-container"></div>
+        <div class="draggable-box"></div>
+      </section>
+      <section>
+        <a href="/"><button>Go Back to Projects</button></a>
+      </section>
+    </main>
+    <script>
+      let isDown = false;
+      let startX = null;
+      let startY = null;
+      let dragBoxWidth = 0;
+      let dragBoxHeight = 0;
+      let currentX = null;
+      let currentY = null;
+      let selectedIdxArr = [];
+      let blockArr = [];
+      const draggableBox = document.querySelector('.draggable-box');
+      const boxesContainer = document.querySelector('.boxes-container');
+      document.body.addEventListener('mousedown', (e) => {
+        startX = e.clientX;
+        startY = e.clientY;
+        dragBoxWidth = 0;
+        dragBoxHeight = 0;
+        draggableBox.style.width = `${dragBoxWidth}px`;
+        draggableBox.style.height = `${dragBoxHeight}px`;
+        isDown = true;
+        blockArr.forEach(block => {
+          block.removeColor();
+        });
+      });
+      document.body.addEventListener('mousemove', (e) => {
+        if (!isDown) {
+          return;
+        }
+        draggableBox.style.display = `inline-block`;
+        currentX = e.clientX;
+        currentY = e.clientY;
+        const cornerX = Math.min(startX, currentX);
+        const cornerY = Math.min(startY, currentY);
+        draggableBox.style.top = `${cornerY}px`;
+        draggableBox.style.left = `${cornerX}px`;
+        // * Moving to the left and up
+        if (currentX < startX && currentY < startY) {
+          dragBoxWidth = startX - cornerX;
+          dragBoxHeight = startY - cornerY;
+        }
+        // * Moving to the right and down
+        if (currentX > startX && currentY > startY) {
+          dragBoxWidth = currentX - startX;
+          dragBoxHeight = currentY - startY;
+        }
+        // * Moving to the right and up
+        if (currentX > startX && currentY < startY) {
+          dragBoxWidth = currentX - startX;
+          dragBoxHeight = startY - cornerY;
+        }
+        // * Moving to the left and down
+        if (currentX < startX && currentY > startY) {
+          dragBoxWidth = startX - currentX;
+          dragBoxHeight = currentY - startY;
+        }
+        draggableBox.style.width = `${dragBoxWidth}px`;
+        draggableBox.style.height = `${dragBoxHeight}px`;
+        const dragBoxProps = draggableBox.getBoundingClientRect();
+        selectedIdxArr = checkSelected(dragBoxProps, []);
+        blockArr.forEach((block, idx) => {
+          if(selectedIdxArr.includes(idx)) {
+            block.addColor();
+            return;
+          }
+          block.removeColor();
+        })
+      });
+      document.body.addEventListener('mouseup', (e) => {
+        startX = null;
+        startY = null;
+        currentX = null;
+        currentY = null;
+        isDown = false;
+        dragBoxHeight = 0;
+        dragBoxWidth = 0;
+        draggableBox.style.width = `${dragBoxWidth}px`;
+        draggableBox.style.height = `${dragBoxHeight}px`;
+        draggableBox.style.display = `none`;
+      });
+      function Block(idx) {
+        this.idx = idx;
+        this.selected = false;
+        this.htmlBlock = document.createElement('div');
+        this.htmlBlock.classList.add('block');
+        boxesContainer.append(this.htmlBlock);
+        this.rectProps = this.htmlBlock.getBoundingClientRect();
+        this.addColor = () => {
+          this.htmlBlock.classList.add('selected');
+        }
+        this.removeColor = () => {
+          this.htmlBlock.classList.remove('selected');
+        }
+      }
+      const makeBlockArr = (count = 0, theBlockArr = []) => {
+        if (count === 20) {
+          return theBlockArr;
+        }
+        theBlockArr.push(new Block(count));
+        return makeBlockArr(count+1, theBlockArr);
+      }
+      blockArr = makeBlockArr();
+      const rectPropsArr = blockArr.map((block, idx) => {
+        const newObj = {
+          idx: idx,
+          left: block.rectProps.left,
+          right: block.rectProps.right,
+          top: block.rectProps.top,
+          bottom: block.rectProps.bottom
+        }
+        return newObj;
+      })
+      const checkSelected = ({top, bottom, left, right}, arr = []) => {
+        rectPropsArr.forEach((obj) => {
+          if (!arr.includes(obj.idx)) {
+            if ((right > obj.left && bottom > obj.top && left < obj.right && top < obj.bottom)) {
+              arr.push(obj.idx);
+            }
+          }
+          return;
+        })
+        return arr;
+      }
+    </script>
+  </body>
+</html>
