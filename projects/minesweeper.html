@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <title>Minesweeper</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      .boxes-container {
+        display: flex;
+        flex-wrap: wrap;
+        width: 502px;
+        height: 502px;
+        border: 1px black solid;
+      }
+      .box {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border: 1px black solid;
+        margin-top: 0;
+        padding-top: 0;
+      }
+      .bomb {
+        text-align: center;
+        font-weight: bolder;
+        font-size: 1.6rem;
+        margin: auto;
+        padding-top: 8px;
+      }
+      .revealed {
+        background-color: lightblue;
+        text-align: center;
+        font-weight: bolder;
+        font-size: 1.6rem;
+        margin: auto;
+        padding-top: 8px;
+      }
+      .flag {
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Minesweeper</h1>
+      <p>This app is a fully functional classic game of Minesweeper.</p>
+      <br>
+      <p>The user is able to click on boxes, mark boxes as flagged by right clicking.</p>
+      <p>Boxes reveal the number of bombs in its neighbor boxes. If neighboring boxes contain no bombs, neighboring boxes are revealed recursively.</p>
+      <br>
+      <a href="https://github.com/aortizoj15/frontend-apps/blob/master/projects/minesweeper.html">View Code</a>
+    </header>
+    <main>
+      <section>
+    <div class="boxes-container"></div>
+      </section>
+      <section>
+        <a href="/"><button>Go Back to Projects</button></a>
+      </section>
+    </main>
+    <script>
+      const boxesContainer = document.querySelector('.boxes-container');
+      let boxesArr = [];
+      let totalBoxCheck = 0;
+      let oneDimBoxesArr = [];
+      function Box(row, col) {
+        this.row = row;
+        this.col = col;
+        this.bomb = false;
+        this.neighborsArr = [];
+        this.revealed = false;
+        this.htmlBox = document.createElement('div');
+        this.htmlBox.classList.add('box');
+        this.makeBomb = () => {
+          this.bomb = true;
+          this.htmlBox.classList.add('bomb');
+        }
+        this.numberOfBombsInNeighbors = 0;
+        this.htmlBox.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          this.htmlBox.classList.add('flag');
+        })
+        this.htmlBox.addEventListener('click', () => {
+          this.htmlBox.classList.remove('flag');
+          if (this.bomb) {
+            if(confirm('Oh no you hit a bomb! Would you like to play again?')){
+              createGame();
+            }
+          }
+          recursiveBoxCall(this);
+          if (gameWon()) {
+            if (confirm("You won! Would you like to play again?")) {
+              createGame();
+            }
+          }
+        })
+        boxesContainer.append(this.htmlBox);
+      }
+      const makeGrid = (row = 10, col = 10, rowArr = [], colArr = [], rowVal = 0, colVal = 0) => {
+        if (row === 0) return rowArr;
+        if (col === colArr.length) {
+          rowArr.push(colArr);
+          return makeGrid(row - 1, col, rowArr, [], rowVal + 1, 0);
+        }
+        colArr.push(new Box(rowVal, colVal));
+        return makeGrid(row, col, rowArr, colArr, rowVal, colVal + 1);
+      };
+      const makeBombBoxes = (bombCount = 10, bombArr = []) => {
+        if (bombCount === 0) {
+          return;
+        }
+        const randomBox = boxesArr[Math.floor(Math.random() * boxesArr.length)][Math.floor(Math.random() * boxesArr.length)];
+        if (bombArr.includes(randomBox)) {
+          return makeBombBoxes(bombCount, bombArr);
+        }
+        randomBox.makeBomb();
+        bombArr.push(randomBox);
+        return makeBombBoxes(bombCount-1, bombArr);
+      }
+      const recursiveBoxCall = box => {
+        if (box.revealed) {
+          return;
+        }
+        if (box.numberOfBombsInNeighbors !== 0) {
+          box.htmlBox.classList.remove('flag');
+          box.revealed = true;
+          box.htmlBox.classList.add("revealed");
+          box.htmlBox.innerHTML = box.numberOfBombsInNeighbors;
+          return;
+        }
+        if(box.bomb) {
+          return;
+        }
+        box.htmlBox.classList.remove('flag');
+        box.revealed = true;
+        box.htmlBox.classList.add("revealed");
+        box.neighborsArr.forEach((neighbor) => {
+          return recursiveBoxCall(neighbor);
+        });
+      };
+      const getBoxNeighborsAndBombCount = () => {
+        oneDimBoxesArr.forEach((box) => {
+          // * Adds Box Above
+          if (boxesArr[box.row - 1]) {
+            box.neighborsArr.push(boxesArr[box.row - 1][box.col]);
+          }
+          // * Adds Box Above and Right
+          if (boxesArr[box.row - 1] && boxesArr[box.row - 1][box.col + 1]) {
+            box.neighborsArr.push(boxesArr[box.row - 1][box.col + 1]);
+          }
+          // * Adds Box to the Right
+          if (boxesArr[box.row][box.col + 1]) {
+            box.neighborsArr.push(boxesArr[box.row][box.col + 1]);
+          }
+          // * Adds Box Below and Right
+          if (boxesArr[box.row + 1] && boxesArr[box.row + 1][box.col + 1]) {
+            box.neighborsArr.push(boxesArr[box.row + 1][box.col + 1]);
+          }
+          // * Adds Box Below
+          if (boxesArr[box.row + 1]) {
+            box.neighborsArr.push(boxesArr[box.row + 1][box.col]);
+          }
+          // * Adds Box Below and Left
+          if (boxesArr[box.row + 1] && boxesArr[box.row + 1][box.col - 1]) {
+            box.neighborsArr.push(boxesArr[box.row + 1][box.col - 1]);
+          }
+          // * Adds Box to the Left
+          if (boxesArr[box.row][box.col - 1]) {
+            box.neighborsArr.push(boxesArr[box.row][box.col - 1]);
+          }
+          // * Adds Box Above and Left
+          if (boxesArr[box.row - 1] && boxesArr[box.row - 1][box.col - 1]) {
+            box.neighborsArr.push(boxesArr[box.row - 1][box.col - 1]);
+          }
+          box.numberOfBombsInNeighbors = box.neighborsArr.reduce((bombCount, box) => {
+            if (box.bomb === true) {
+              bombCount = bombCount + 1;
+            }
+            return bombCount;
+          }, 0);
+        })
+      };
+      const gameWon = () => {
+        totalBoxCheck = oneDimBoxesArr.reduce((totalCount, box) => {
+          if (box.revealed || box.bomb) {
+            totalCount = totalCount + 1;
+          }
+          return totalCount;
+        }, 0);
+        if (totalBoxCheck === 100) {
+          return true;
+        }
+        return false;
+      }
+      const createGame = () => {
+        boxesContainer.innerHTML = '';
+        boxesArr = [];
+        oneDimBoxesArr = [];
+        makeGrid(10, 10, boxesArr);
+        makeBombBoxes();
+        oneDimBoxesArr = boxesArr.flat();
+        getBoxNeighborsAndBombCount();
+      }
+      createGame();
+    </script>
+  </body>
+</html>
